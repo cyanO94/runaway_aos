@@ -1,10 +1,11 @@
-package com.example.runaway_aos
+package com.example.runaway_aos.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -32,7 +33,7 @@ fun RunawayApp() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            if (webViewUrl.isEmpty()) SetIpScreen(changeView = { url -> webViewUrl = url})
+            if (webViewUrl.isEmpty()) UrlSetScreen(changeView = { url -> webViewUrl = url})
             else {
                 WebViewScreen(webViewUrl)
             }
@@ -41,7 +42,7 @@ fun RunawayApp() {
 }
 
 @Composable
-fun SetIpScreen(
+fun UrlSetScreen(
     changeView: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -51,15 +52,25 @@ fun SetIpScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(modifier = Modifier.padding(16.dp)) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             TextField(
+                modifier = Modifier.width(200.dp),
                 value = url,
                 onValueChange = {url = it},
-                label = { Text(text = "Input IP") }
+                label = { Text(text = "input IP") }
             )
 
             Button(
-                onClick = {changeView(url)}) {
+                onClick = {
+                    changeView(
+                        if (url.contains(":")) url
+                        else "$url:9002"
+                    )
+                }
+            ) {
                 Text("입력")
             }
         }
@@ -67,11 +78,14 @@ fun SetIpScreen(
         Row(
             modifier = modifier,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
-
         ) {
             Button(
                 onClick = {changeView("http://223.130.147.208/")}) {
-                Text("배포")
+                Text("배포 서버")
+            }
+            Button(
+                onClick = {changeView("http://192.168.0.7:9002/")}) {
+                Text("집 로컬")
             }
         }
 
