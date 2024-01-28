@@ -1,5 +1,6 @@
 package com.example.runaway_aos.ui
 
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ fun rememberWebView(url: String): WebView {
         WebView(context).apply {
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
+            settings.cacheMode = WebSettings.LOAD_NO_CACHE
             addJavascriptInterface(RunawayJavaScriptInterface(this), "Android")
             loadUrl(url)
         }

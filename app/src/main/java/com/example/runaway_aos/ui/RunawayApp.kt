@@ -1,5 +1,11 @@
 package com.example.runaway_aos.ui
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,9 +25,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.runaway_aos.ui.theme.Runaway_aosTheme
+
 
 @Composable
 fun RunawayApp() {
@@ -34,9 +43,7 @@ fun RunawayApp() {
             color = MaterialTheme.colorScheme.background
         ) {
             if (webViewUrl.isEmpty()) UrlSetScreen(changeView = { url -> webViewUrl = url})
-            else {
-                WebViewScreen(webViewUrl)
-            }
+            else WebViewScreen(webViewUrl)
         }
     }
 }
@@ -46,6 +53,19 @@ fun UrlSetScreen(
     changeView: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val permissions = arrayOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+    )
+
+    val launcherMultiplePermissions = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionsMap ->
+        permissionsMap.values.reduce { acc, next -> acc && next }
+    }
+
     var url by remember { mutableStateOf("")}
     Column(
         modifier = modifier,
@@ -87,9 +107,35 @@ fun UrlSetScreen(
                 onClick = {changeView("http://192.168.0.7:9002/")}) {
                 Text("집 로컬")
             }
+
+            Button(
+                onClick = {
+                    checkAndRequestPermissions(
+                        context,
+                        permissions,
+                        launcherMultiplePermissions
+                    )
+                }
+            ) {
+                Text("권한")
+            }
         }
+    }
+}
 
-
+fun checkAndRequestPermissions(
+    context: Context,
+    permissions: Array<String>,
+    launcher: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>>,
+) {
+    if (!permissions.all {
+            ContextCompat.checkSelfPermission(
+                context,
+                it
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    ) {
+        launcher.launch(permissions)
     }
 }
 
