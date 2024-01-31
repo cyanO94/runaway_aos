@@ -104,9 +104,19 @@ fun UrlSetScreen(
                 Text("배포 서버")
             }
             Button(
+                onClick = {changeView("http://175.45.202.231/")}) {
+                Text("develop 서버")
+            }
+            Button(
                 onClick = {changeView("http://192.168.0.7:9002/")}) {
                 Text("집 로컬")
             }
+        }
+
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
 
             Button(
                 onClick = {
