@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.example.runaway_aos.LocationUpdateListener
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -45,6 +47,7 @@ class RunningService: LifecycleService() {
 
     private val isTracking = MutableStateFlow(false)
     private var locationUpdateListener: LocationUpdateListener? = null
+    val file = accessFile()
 
     override fun onCreate() {
         super.onCreate()
@@ -105,7 +108,6 @@ class RunningService: LifecycleService() {
                 as NotificationManager
         createNotificationChannel(notificationManager)
         startForeground(NOTIFICATION_ID, baseNotificationBuilder.build())
-
     }
 
     private fun createNotificationChannel(notificationManager: NotificationManager) {
@@ -131,6 +133,7 @@ class RunningService: LifecycleService() {
                 for (location in result.locations) {
                     Timber.d("NEW LOCATION: ${location.latitude}, ${location.longitude}")
                     locationUpdateListener?.onLocationUpdate(location.latitude, location.longitude)
+                    file.writeText("${location.latitude}, ${location.longitude}")
                 }
             }
         }
@@ -142,5 +145,22 @@ class RunningService: LifecycleService() {
         setIntervalMillis(LOCATION_UPDATE_INTERVAL)
         setWaitForAccurateLocation(true)
     }.build()
+
+
+    fun selectPhysicalStorageLocation(): File {
+        val externalStorageVolumes: Array<out File> =
+            ContextCompat.getExternalFilesDirs(this, null)
+        val primaryExternalStorage = externalStorageVolumes[0]
+        return primaryExternalStorage
+    }
+
+    fun accessFile(): File {
+        val externalDir = this.getExternalFilesDir(null)
+        val filename = "running_mock.txt"
+        val file = File(externalDir, filename)
+        return file
+    }
+
+
 
 }
